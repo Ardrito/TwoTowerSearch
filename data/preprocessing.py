@@ -1,86 +1,89 @@
 import random
 from datasets import load_dataset
-
+import numpy as np
 
 def extract_query_doc_pairs(split_data):
     """
     Extracts query-document pairs from the split data.
-
-    Args:
-        split_data: A dataset split (train, validation, or test)
-
-    Returns:
-        list: Query-document pairs with positive documents
+    Tracks how many positives were selected vs. fallback.
     """
     query_doc_pairs = []
+    selected_count = 0
+    fallback_count = 0
+    total = len(split_data)
 
-    for i in range(len(split_data)):
+    for i in range(total):
         item = split_data[i]
         query_id = item['query_id']
         query_text = item['query']
+        passages = item['passages']['passage_text']
+        is_selected = item['passages'].get('is_selected', [0] * len(passages))
 
-    # Get passages and their relevance indicators
-    passages = item['passages']['passage_text']
-    is_selected = item['passages']['is_selected']
+        positive_docs = [passages[j] for j, selected in enumerate(is_selected) if selected == 1]
 
-    # Find positive (relevant) documents
+        if positive_docs:
+            selected_count += 1
+        elif passages:
+            # Fallback to first passage
+            positive_docs = [passages[0]]
+            fallback_count += 1
 
-    positive_docs = []
-    for j, selected in enumerate(is_selected):
-        if selected == 1:
-            positive_docs.append(passages[j])
+        if positive_docs:
+            query_doc_pairs.append({
+                'query_id': query_id,
+                'query': query_text,
+                'positive_docs': positive_docs,
+                'all_passages': passages
+            })
 
-    # If there are positive documents, add to the pairs
-    if positive_docs:
-        query_doc_pairs.append({
-            'query_id': query_id,
-            'query': query_text,
-            'positive_docs': positive_docs,
-            'all_passages': passages
-        })
+        # Optional: print progress every 10k
+        if i % 10000 == 0 and i > 0:
+            print(f"Processed {i} / {total}")
 
+    print(f"\n✅ Total query-doc pairs: {len(query_doc_pairs)}")
+    print(f"   📌 With is_selected == 1: {selected_count}")
+    print(f"   🧷 With fallback to first passage: {fallback_count}")
     return query_doc_pairs
 
 
-def generate_triples(query_doc_pairs, num_negatives=1):
-    """
-    Generates triples from query-document pairs.
-
-    Args:
-        query_doc_pairs: List of query-document pairs with positive docs
-        num_negatives: Number of negative documents to sample
-
-    Returns:
-        list: List of triples (query, positive_doc, negative_doc)
-    """
-    triples = []
+def build_doc_table(query_doc_pairs):
+    doc_table = {}         # {doc_id: doc_text}
+    doc_to_id = {}         # {doc_text: doc_id}
+    doc_id_counter = 0
 
     for pair in query_doc_pairs:
-        query = pair['query']
-        query_id = pair['query_id']
-        positive_docs = pair['positive_docs']
-        all_passages = pair['all_passages']
+        for passage in pair['all_passages']:
+            if passage not in doc_to_id:
+                doc_id = f"d{doc_id_counter:06d}"
+                doc_to_id[passage] = doc_id
+                doc_table[doc_id] = passage
+                doc_id_counter += 1
+    return doc_table, doc_to_id
 
-        # For each positive document
-        for pos_doc in positive_docs:
-            # Create a list of passages that are not positive for this query
-            negative_candidates = [
-                p for p in all_passages if p not in positive_docs]
-            # If no negative candidates, skip this query
-            if len(negative_candidates) < num_negatives:
-                continue
-        # Sample negative documents
-            neg_docs = random.sample(negative_candidates, min(
-                num_negatives, len(negative_candidates)))
-            # Create triples for each negative document
+def generate_triples(query_doc_pairs, doc_to_id, num_negatives=1, negative_pool_size=100000):
+    triples = []
+    all_docs = list(doc_to_id.keys())
+    negative_pool = random.sample(all_docs, min(negative_pool_size, len(all_docs)))
+
+    for i, pair in enumerate(query_doc_pairs):
+        query = pair['query']
+        pos_docs = pair['positive_docs']
+
+        for pos_doc in pos_docs:
+            neg_docs = random.sample(negative_pool, num_negatives)
             for neg_doc in neg_docs:
                 triples.append({
-                    'query_id': query_id,
                     'query': query,
                     'pos_doc': pos_doc,
                     'neg_doc': neg_doc
                 })
+
+        if i % 5000 == 0 and i > 0:
+            print(f"📊 Processed {i}/{len(query_doc_pairs)} queries...")
+
     return triples
+
+
 
 
 # Testing functions

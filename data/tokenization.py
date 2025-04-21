@@ -1,15 +1,22 @@
-from nltk.tokenize import word_tokenize
-from preprocessing import extract_query_doc_pairs, generate_triples
+import re
+from data.preprocessing import extract_query_doc_pairs, generate_triples
 from datasets import load_dataset
 import random
 
+def simple_tokenize(text):
+    # Lowercase
+    text = text.lower()
+    # Remove punctuation
+    text = re.sub(r"[^\w\s]", "", text)
+    # Split on whitespace
+    return text.split()
 
 def tokenize_texts(triples):
     all_texts = []
     for triple in triples:
-        all_texts.append(word_tokenize(triple['query'].lower()))
-        all_texts.append(word_tokenize(triple['pos_doc'].lower()))
-        all_texts.append(word_tokenize(triple['neg_doc'].lower()))
+        all_texts.append(simple_tokenize(triple['query']))
+        all_texts.append(simple_tokenize(triple['pos_doc']))
+        all_texts.append(simple_tokenize(triple['neg_doc']))
     return all_texts
 
 
