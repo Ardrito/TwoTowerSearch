@@ -1,0 +1,44 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+
+# Dataset caches
+*.arrow
+*.jsonl
+*.gz
+*.zip
+*.tsv
+*.csv
+*.pkl
+*.parquet
+*.h5
+
+# HuggingFace cache
+.cache/
+~/.cache/
+datasets_cache/
+**/datasets/
+
+# Model checkpoints & saved artifacts
+*.model
+*.vec
+*.bin
+*.pt
+*.ckpt
+*.onnx
+saved_artifacts/
+
+# VS Code settings
+.vscode/
+
+# System
+.DS_Store
+Thumbs.db
+
+# Environment files
+*.egg-info/
+*.log
+*venv/
+
