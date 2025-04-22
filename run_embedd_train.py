@@ -11,6 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import os
 import torch.optim as optim
+
 random.seed(42)
 torch.manual_seed(42)
 np.random.seed(42)
