@@ -3,8 +3,7 @@ import json
 from datasets import load_dataset
 from gensim.models import Word2Vec
 import gensim.downloader as api
-
-from preprocessing import extract_query_doc_pairs, generate_triples
+from preprocessing import extract_query_doc_pairs, generate_triples, build_doc_table
 from tokenization import tokenize_texts
 
 SAVE_DIR = "saved_artifacts"
@@ -38,9 +37,13 @@ if __name__ == "__main__":
     all_pairs = extract_query_doc_pairs(dataset["train"])
     print(f"✅ Extracted {len(all_pairs)} pairs.")
 
+    print("📇 Building document table...")
+    doc_table, doc_to_id = build_doc_table(all_pairs)
+    print(f"✅ Indexed {len(doc_table)} unique documents.")
+
     print("🔁 Generating query-positive-negative triples...")
-    all_triples = generate_triples(all_pairs, num_negatives=1)
-    print(f"✅ Generated {len(all_triples)} triples.")
+    all_triples = generate_triples(all_pairs, doc_to_id, num_negatives=1)
+
 
     print("✂️ Tokenizing all triples...")
     tokenized_sentences = tokenize_texts(all_triples)

@@ -13,12 +13,12 @@ with open("saved_artifacts/raw_docs.json", encoding="utf-8") as f:
     docs = json.load(f)
 
 # === Pick a sample query ===
-query_index = 0  # change this to try other queries
+query_index = 5  # change this to try other queries
 query_vec = query_vectors[query_index].reshape(1, -1)
 similarities = cosine_similarity(query_vec, doc_vectors)[0]
 
 # === Get Top-K similar docs ===
-top_k = 10
+top_k = 5
 top_indices = similarities.argsort()[::-1][:top_k]
 
 print(f"\n🔍 Query: {queries[query_index]}")

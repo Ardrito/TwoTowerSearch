@@ -5,7 +5,7 @@ import numpy as np
 from ms_marco_dataset import MSMarcoWord2VecDataset
 
 # Load your saved model and triples
-w2v_model = Word2Vec.load("saved_artifacts/msmarco_word2vec_skipgram.model")
+w2v_model = Word2Vec.load("saved_artifacts/word2vec_skipgram_text8.model")
 
 with open("saved_artifacts/triples_full.json", encoding="utf-8") as f:
     triples = json.load(f)

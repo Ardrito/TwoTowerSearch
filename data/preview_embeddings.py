@@ -4,10 +4,9 @@ from gensim.models import Word2Vec
 import json
 from ms_marco_dataset import MSMarcoWord2VecDataset
 
-# No need for nltk or punkt anymore
 
 # Load saved artifacts
-w2v_model = Word2Vec.load("saved_artifacts/msmarco_word2vec_full.model")
+w2v_model = Word2Vec.load("saved_artifacts/word2vec_skipgram_text8.model")
 with open("saved_artifacts/triples_full.json", encoding="utf-8") as f:
     triples = json.load(f)
 
