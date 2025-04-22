@@ -1,7 +1,6 @@
 import re
 from data.preprocessing import extract_query_doc_pairs, generate_triples
 from datasets import load_dataset
-import random
 
 def simple_tokenize(text):
     # Lowercase

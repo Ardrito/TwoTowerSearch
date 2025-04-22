@@ -2,6 +2,7 @@ import random
 from datasets import load_dataset
 import numpy as np
 
+
 def extract_query_doc_pairs(split_data):
     """
     Extracts query-document pairs from the split data.
@@ -19,7 +20,8 @@ def extract_query_doc_pairs(split_data):
         passages = item['passages']['passage_text']
         is_selected = item['passages'].get('is_selected', [0] * len(passages))
 
-        positive_docs = [passages[j] for j, selected in enumerate(is_selected) if selected == 1]
+        positive_docs = [passages[j]
+                         for j, selected in enumerate(is_selected) if selected == 1]
 
         if positive_docs:
             selected_count += 1
@@ -27,6 +29,15 @@ def extract_query_doc_pairs(split_data):
             # Fallback to first passage
             positive_docs = [passages[0]]
             fallback_count += 1
+
+        # Get passages and their relevance indicators
+        passages = item['passages']['passage_text']
+        is_selected = item['passages']['is_selected']
+
+        positive_docs = []
+        for j, selected in enumerate(is_selected):
+            if selected == 1:
+                positive_docs.append(passages[j])
 
         if positive_docs:
             query_doc_pairs.append({
@@ -60,10 +71,12 @@ def build_doc_table(query_doc_pairs):
                 doc_id_counter += 1
     return doc_table, doc_to_id
 
+
 def generate_triples(query_doc_pairs, doc_to_id, num_negatives=1, negative_pool_size=100000):
     triples = []
     all_docs = list(doc_to_id.keys())
-    negative_pool = random.sample(all_docs, min(negative_pool_size, len(all_docs)))
+    negative_pool = random.sample(
+        all_docs, min(negative_pool_size, len(all_docs)))
 
     for i, pair in enumerate(query_doc_pairs):
         query = pair['query']
@@ -82,8 +95,6 @@ def generate_triples(query_doc_pairs, doc_to_id, num_negatives=1, negative_pool_
             print(f"📊 Processed {i}/{len(query_doc_pairs)} queries...")
 
     return triples
-
-
 
 
 # Testing functions

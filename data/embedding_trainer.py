@@ -1,6 +1,5 @@
 import os
 import json
-from nltk.tokenize import word_tokenize
 from gensim.models import Word2Vec
 from datasets import load_dataset
 from preprocessing import extract_query_doc_pairs, generate_triples
@@ -20,9 +19,9 @@ def train_word2vec(sentences, vector_size=300, window=5, min_count=2):
     Returns:
         model: Trained Word2Vec model
     """
-    print("🧠 Training Word2Vec model (CBOW)...")
+    print("🧠 Training Word2Vec model (Word2Vec)...")
     model = Word2Vec(sentences, vector_size=vector_size,
-                     window=window, min_count=min_count, sg=0)
+                     window=window, min_count=min_count, sg=1)
     return model
 
 
@@ -37,11 +36,11 @@ if __name__ == "__main__":
     print("📦 Loading MS MARCO dataset...")
     dataset = load_dataset("ms_marco", "v1.1")
     # Feel free to increase for full run
-    sample = dataset["train"].select(range(1000))
+    full_data = dataset["train"]  # no select() — get all examples
 
     # 2. Extract and generate triples
     print("🔍 Extracting query-document pairs and generating triples...")
-    pairs = extract_query_doc_pairs(sample)
+    pairs = extract_query_doc_pairs(full_data)
     triples = generate_triples(pairs, num_negatives=1)
 
     # 3. Tokenize the text
